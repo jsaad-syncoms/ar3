@@ -219,8 +219,8 @@
       const scene = document.querySelector('a-scene');
       const box = document.querySelector('#box');
       let isDragging = false;
-      let isResizing = false;
       let isRotating = false;
+      let isResizing = false;
       let previousPosition = { x: 0, y: 0 };
       let initialScale = { x: 1, y: 1, z: 1 };
       let initialDistance = 0;
@@ -229,19 +229,19 @@
       // Helper function to calculate distance between two touch points
       function getDistance(touches) {
         const dx = touches[0].clientX - touches[1].clientX;
-        const dy = touches[0].clientY - touches[1].clientY;
+        const dy = touches[0].clientY - touches[0].clientY;
         return Math.sqrt(dx * dx + dy * dy);
       }
 
       // Mouse events for rotation
       scene.addEventListener('mousedown', function (event) {
-        if (event.button === 0) {  // Left button
-          isRotating = true;
+        if (event.detail === 2) {  // Double click for repositioning
+          isDragging = true;
           const rect = scene.renderer.domElement.getBoundingClientRect();
           previousPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
           event.preventDefault();
-        } else if (event.detail === 2) {  // Double click for repositioning
-          isDragging = true;
+        } else if (event.button === 0) {  // Left button for rotation
+          isRotating = true;
           const rect = scene.renderer.domElement.getBoundingClientRect();
           previousPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
           event.preventDefault();
@@ -354,15 +354,17 @@
 
       // Mouse wheel event for resizing
       scene.addEventListener('wheel', function (event) {
-        const scale = box.getAttribute('scale');
-        const scaleFactor = 1 + event.deltaY * -0.001; // Adjust this for sensitivity
-        const newScale = {
-          x: Math.max(0.1, scale.x * scaleFactor),
-          y: Math.max(0.1, scale.y * scaleFactor),
-          z: Math.max(0.1, scale.z * scaleFactor)
-        };
-        box.setAttribute('scale', newScale);
-        event.preventDefault();
+        if (!isRotating && !isDragging) {
+          const scale = box.getAttribute('scale');
+          const scaleFactor = 1 + event.deltaY * -0.001; // Adjust this for sensitivity
+          const newScale = {
+            x: Math.max(0.1, scale.x * scaleFactor),
+            y: Math.max(0.1, scale.y * scaleFactor),
+            z: Math.max(0.1, scale.z * scaleFactor)
+          };
+          box.setAttribute('scale', newScale);
+          event.preventDefault();
+        }
       });
     });
   </script>
