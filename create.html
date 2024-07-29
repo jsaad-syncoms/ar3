@@ -255,7 +255,11 @@
                     const reader = new FileReader();
                     reader.onload = function (e) {
                         texture.setAttribute('src', e.target.result);
-                        box.setAttribute('material', 'src: #boxTexture');
+
+                        // Wait for the texture to load before updating the box material
+                        texture.addEventListener('load', function () {
+                            box.setAttribute('material', 'src: #boxTexture');
+                        });
                     };
                     reader.readAsDataURL(file);
                 }
