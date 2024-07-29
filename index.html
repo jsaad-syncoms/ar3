@@ -10,6 +10,62 @@
       #arjsDebugUIContainer {display: none !important;}
       .a-enter-vr-button {display: none !important;}
   </style>
+
+  <script>
+    // Register a custom A-Frame component to handle dragging
+    AFRAME.registerComponent('drag-rotate', {
+      schema: { default: false },
+      init: function () {
+        this.isDragging = false;
+        this.previousPosition = { x: 0, y: 0 };
+        
+        this.onStart = this.onStart.bind(this);
+        this.onMove = this.onMove.bind(this);
+        this.onEnd = this.onEnd.bind(this);
+        
+        this.el.addEventListener('mousedown', this.onStart);
+        this.el.addEventListener('touchstart', this.onStart);
+        
+        document.addEventListener('mousemove', this.onMove);
+        document.addEventListener('touchmove', this.onMove);
+        
+        document.addEventListener('mouseup', this.onEnd);
+        document.addEventListener('touchend', this.onEnd);
+      },
+      onStart: function (event) {
+        this.isDragging = true;
+        const rect = this.el.sceneEl.renderer.domElement.getBoundingClientRect();
+        const clientX = event.clientX || event.touches[0].clientX;
+        const clientY = event.clientY || event.touches[0].clientY;
+        this.previousPosition = { x: clientX - rect.left, y: clientY - rect.top };
+        event.preventDefault();
+      },
+      onMove: function (event) {
+        if (this.isDragging) {
+          const rect = this.el.sceneEl.renderer.domElement.getBoundingClientRect();
+          const clientX = event.clientX || event.touches[0].clientX;
+          const clientY = event.clientY || event.touches[0].clientY;
+          const currentPosition = { x: clientX - rect.left, y: clientY - rect.top };
+          
+          const deltaX = currentPosition.x - this.previousPosition.x;
+          const deltaY = currentPosition.y - this.previousPosition.y;
+          
+          const rotation = this.el.getAttribute('rotation');
+          this.el.setAttribute('rotation', {
+            x: rotation.x + deltaY * 0.1,
+            y: rotation.y + deltaX * 0.1,
+            z: rotation.z
+          });
+          
+          this.previousPosition = currentPosition;
+          event.preventDefault();
+        }
+      },
+      onEnd: function () {
+        this.isDragging = false;
+      }
+    });
+  </script>
 </head>
 <body style="margin: 0; overflow: hidden;">
   <a-scene embedded arjs>
@@ -74,60 +130,6 @@
         });
     </script>-->
 
-  <script>
-    // Register a custom A-Frame component to handle dragging
-    AFRAME.registerComponent('drag-rotate', {
-      schema: { default: false },
-      init: function () {
-        this.isDragging = false;
-        this.previousPosition = { x: 0, y: 0 };
-        
-        this.onStart = this.onStart.bind(this);
-        this.onMove = this.onMove.bind(this);
-        this.onEnd = this.onEnd.bind(this);
-        
-        this.el.addEventListener('mousedown', this.onStart);
-        this.el.addEventListener('touchstart', this.onStart);
-        
-        document.addEventListener('mousemove', this.onMove);
-        document.addEventListener('touchmove', this.onMove);
-        
-        document.addEventListener('mouseup', this.onEnd);
-        document.addEventListener('touchend', this.onEnd);
-      },
-      onStart: function (event) {
-        this.isDragging = true;
-        const rect = this.el.sceneEl.renderer.domElement.getBoundingClientRect();
-        const clientX = event.clientX || event.touches[0].clientX;
-        const clientY = event.clientY || event.touches[0].clientY;
-        this.previousPosition = { x: clientX - rect.left, y: clientY - rect.top };
-        event.preventDefault();
-      },
-      onMove: function (event) {
-        if (this.isDragging) {
-          const rect = this.el.sceneEl.renderer.domElement.getBoundingClientRect();
-          const clientX = event.clientX || event.touches[0].clientX;
-          const clientY = event.clientY || event.touches[0].clientY;
-          const currentPosition = { x: clientX - rect.left, y: clientY - rect.top };
-          
-          const deltaX = currentPosition.x - this.previousPosition.x;
-          const deltaY = currentPosition.y - this.previousPosition.y;
-          
-          const rotation = this.el.getAttribute('rotation');
-          this.el.setAttribute('rotation', {
-            x: rotation.x + deltaY * 0.1,
-            y: rotation.y + deltaX * 0.1,
-            z: rotation.z
-          });
-          
-          this.previousPosition = currentPosition;
-          event.preventDefault();
-        }
-      },
-      onEnd: function () {
-        this.isDragging = false;
-      }
-    });
-  </script>
+  
 </body>
 </html>
