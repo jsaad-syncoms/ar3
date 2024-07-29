@@ -27,38 +27,31 @@
 
   <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Get reference to the box entity
-            const box = document.getElementById('box');
+      const box = document.getElementById('box');
 
-            // Function to handle resize
-            function resizeBox(event) {
-                const scale = parseFloat(event.target.value);
-                box.setAttribute('scale', `${scale} ${scale} ${scale}`);
-            }
+      // Function to handle resize
+      function resizeBox(event) {
+        const scale = parseFloat(event.target.value);
+        box.setAttribute('scale', `${scale} ${scale} ${scale}`);
+      }
 
-            // Function to handle reposition
-            function repositionBox(event) {
-                const [x, y, z] = event.target.value.split(',').map(Number);
-                box.setAttribute('position', `${x} ${y} ${z}`);
-            }
+      // Function to handle reposition
+      function repositionBox(event) {
+        const [x, y, z] = event.target.value.split(',').map(Number);
+        box.setAttribute('position', `${x} ${y} ${z}`);
+      }
 
-            // Create UI controls for resizing
-            const resizeInput = document.createElement('input');
-            resizeInput.type = 'range';
-            resizeInput.min = 0.1;
-            resizeInput.max = 3;
-            resizeInput.step = 0.1;
-            resizeInput.value = 1;
-            resizeInput.addEventListener('input', resizeBox);
-            document.body.appendChild(resizeInput);
+      // Function to handle rotation
+      function rotateBox(event) {
+        const [x, y, z] = event.target.value.split(',').map(Number);
+        box.setAttribute('rotation', `${x} ${y} ${z}`);
+      }
 
-            // Create UI controls for repositioning
-            const repositionInput = document.createElement('input');
-            repositionInput.type = 'text';
-            repositionInput.placeholder = 'Enter position (x,y,z)';
-            repositionInput.addEventListener('change', repositionBox);
-            document.body.appendChild(repositionInput);
-        });
+      // Setup UI controls
+      document.getElementById('scale').addEventListener('input', resizeBox);
+      document.getElementById('position').addEventListener('change', repositionBox);
+      document.getElementById('rotation').addEventListener('change', rotateBox);
+    });
     </script>
 </body>
 </html>
