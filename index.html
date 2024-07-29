@@ -25,7 +25,7 @@
     <a-entity camera></a-entity>
   </a-scene>
 
-  <script>
+  <!--<script>
         document.addEventListener('DOMContentLoaded', () => {
             // Get reference to the box entity
             const box = document.getElementById('box');
@@ -72,6 +72,75 @@
             rotateInput.addEventListener('change', rotateBox);
             document.body.appendChild(rotateInput);
         });
-    </script>
+    </script>-->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const box = document.getElementById('box');
+      let isDragging = false;
+      let previousPosition = { x: 0, y: 0 };
+      let previousTouch = { x: 0, y: 0 };
+
+      // Mouse events
+      box.addEventListener('mousedown', (event) => {
+        isDragging = true;
+        const rect = box.sceneEl.renderer.domElement.getBoundingClientRect();
+        previousPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      });
+
+      document.addEventListener('mousemove', (event) => {
+        if (isDragging) {
+          const rect = box.sceneEl.renderer.domElement.getBoundingClientRect();
+          const currentPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+          const deltaX = currentPosition.x - previousPosition.x;
+          const deltaY = currentPosition.y - previousPosition.y;
+          const rotation = box.getAttribute('rotation');
+          box.setAttribute('rotation', {
+            x: rotation.x + deltaY * 0.1,
+            y: rotation.y + deltaX * 0.1,
+            z: rotation.z
+          });
+          previousPosition = currentPosition;
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      // Touch events
+      box.addEventListener('touchstart', (event) => {
+        isDragging = true;
+        const touch = event.touches[0];
+        previousTouch = { x: touch.clientX, y: touch.clientY };
+      });
+
+      document.addEventListener('touchmove', (event) => {
+        if (isDragging) {
+          const touch = event.touches[0];
+          const currentTouch = { x: touch.clientX, y: touch.clientY };
+          const deltaX = currentTouch.x - previousTouch.x;
+          const deltaY = currentTouch.y - previousTouch.y;
+          const rotation = box.getAttribute('rotation');
+          box.setAttribute('rotation', {
+            x: rotation.x + deltaY * 0.1,
+            y: rotation.y + deltaX * 0.1,
+            z: rotation.z
+          });
+          previousTouch = currentTouch;
+        }
+      });
+
+      document.addEventListener('touchend', () => {
+        isDragging = false;
+      });
+
+      // Reset button functionality
+      document.getElementById('reset').addEventListener('click', () => {
+        box.setAttribute('position', '0 0 0');
+        box.setAttribute('rotation', '0 0 0');
+      });
+    });
+  </script>
 </body>
 </html>
