@@ -11,38 +11,35 @@
       .a-enter-vr-button {display: none !important;}
   </style>
 
-     <script>
-    AFRAME.registerComponent('drag-rotate', {
+     AFRAME.registerComponent('drag-rotate', {
       schema: { default: false },
       init: function () {
         this.isDragging = false;
+        this.targetEl = this.el.querySelector('#box');
         this.previousPosition = { x: 0, y: 0 };
-        
-        // Bind event listeners to the component
-        this.onStart = this.onStart.bind(this);
-        this.onMove = this.onMove.bind(this);
-        this.onEnd = this.onEnd.bind(this);
-        
-        this.el.addEventListener('mousedown', this.onStart);
-        this.el.addEventListener('touchstart', this.onStart);
-        this.el.sceneEl.addEventListener('mousemove', this.onMove);
-        this.el.sceneEl.addEventListener('touchmove', this.onMove);
-        this.el.sceneEl.addEventListener('mouseup', this.onEnd);
-        this.el.sceneEl.addEventListener('touchend', this.onEnd);
+
+        // Bind event listeners to the scene
+        const scene = this.el;
+        scene.addEventListener('mousedown', this.onStart.bind(this));
+        scene.addEventListener('touchstart', this.onStart.bind(this));
+        scene.addEventListener('mousemove', this.onMove.bind(this));
+        scene.addEventListener('touchmove', this.onMove.bind(this));
+        scene.addEventListener('mouseup', this.onEnd.bind(this));
+        scene.addEventListener('touchend', this.onEnd.bind(this));
       },
       onStart: function (event) {
         console.log('Drag started');
         this.isDragging = true;
-        const rect = this.el.sceneEl.renderer.domElement.getBoundingClientRect();
+        const rect = this.el.renderer.domElement.getBoundingClientRect();
         const clientX = event.clientX || event.touches[0].clientX;
         const clientY = event.clientY || event.touches[0].clientY;
         this.previousPosition = { x: clientX - rect.left, y: clientY - rect.top };
         event.preventDefault();
       },
       onMove: function (event) {
-        if (this.isDragging) {
+        if (this.isDragging && this.targetEl) {
           console.log('Dragging');
-          const rect = this.el.sceneEl.renderer.domElement.getBoundingClientRect();
+          const rect = this.el.renderer.domElement.getBoundingClientRect();
           const clientX = event.clientX || event.touches[0].clientX;
           const clientY = event.clientY || event.touches[0].clientY;
           const currentPosition = { x: clientX - rect.left, y: clientY - rect.top };
@@ -50,8 +47,8 @@
           const deltaX = currentPosition.x - this.previousPosition.x;
           const deltaY = currentPosition.y - this.previousPosition.y;
 
-          const rotation = this.el.getAttribute('rotation');
-          this.el.setAttribute('rotation', {
+          const rotation = this.targetEl.getAttribute('rotation');
+          this.targetEl.setAttribute('rotation', {
             x: rotation.x + deltaY * 0.1,
             y: rotation.y + deltaX * 0.1,
             z: rotation.z
