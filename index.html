@@ -11,7 +11,7 @@
       .a-enter-vr-button {display: none !important;}
   </style>
 
-  <script>
+  <!--<script>
      AFRAME.registerComponent('drag-rotate', {
       schema: { default: false },
       init: function () {
@@ -64,7 +64,7 @@
         this.isDragging = false;
       }
     });
-  </script>
+  </script>-->
 </head>
 <body style="margin: 0; overflow: hidden;">
   <a-scene embedded arjs>
@@ -129,6 +129,90 @@
         });
     </script>-->
 
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const scene = document.querySelector('a-scene');
+      const box = document.querySelector('#box');
+      let isDragging = false;
+      let previousPosition = { x: 0, y: 0 };
+
+      scene.addEventListener('mousedown', function (event) {
+        console.log('Drag started');
+        isDragging = true;
+        const rect = scene.renderer.domElement.getBoundingClientRect();
+        const clientX = event.clientX;
+        const clientY = event.clientY;
+        previousPosition = { x: clientX - rect.left, y: clientY - rect.top };
+        event.preventDefault();
+      });
+
+      scene.addEventListener('mousemove', function (event) {
+        if (isDragging) {
+          console.log('Dragging');
+          const rect = scene.renderer.domElement.getBoundingClientRect();
+          const clientX = event.clientX;
+          const clientY = event.clientY;
+          const currentPosition = { x: clientX - rect.left, y: clientY - rect.top };
+
+          const deltaX = currentPosition.x - previousPosition.x;
+          const deltaY = currentPosition.y - previousPosition.y;
+
+          const rotation = box.getAttribute('rotation');
+          box.setAttribute('rotation', {
+            x: rotation.x + deltaY * 0.1,
+            y: rotation.y + deltaX * 0.1,
+            z: rotation.z
+          });
+
+          previousPosition = currentPosition;
+          event.preventDefault();
+        }
+      });
+
+      scene.addEventListener('mouseup', function () {
+        console.log('Drag ended');
+        isDragging = false;
+      });
+
+      scene.addEventListener('touchstart', function (event) {
+        console.log('Drag started');
+        isDragging = true;
+        const rect = scene.renderer.domElement.getBoundingClientRect();
+        const clientX = event.touches[0].clientX;
+        const clientY = event.touches[0].clientY;
+        previousPosition = { x: clientX - rect.left, y: clientY - rect.top };
+        event.preventDefault();
+      });
+
+      scene.addEventListener('touchmove', function (event) {
+        if (isDragging) {
+          console.log('Dragging');
+          const rect = scene.renderer.domElement.getBoundingClientRect();
+          const clientX = event.touches[0].clientX;
+          const clientY = event.touches[0].clientY;
+          const currentPosition = { x: clientX - rect.left, y: clientY - rect.top };
+
+          const deltaX = currentPosition.x - previousPosition.x;
+          const deltaY = currentPosition.y - previousPosition.y;
+
+          const rotation = box.getAttribute('rotation');
+          box.setAttribute('rotation', {
+            x: rotation.x + deltaY * 0.1,
+            y: rotation.y + deltaX * 0.1,
+            z: rotation.z
+          });
+
+          previousPosition = currentPosition;
+          event.preventDefault();
+        }
+      });
+
+      scene.addEventListener('touchend', function () {
+        console.log('Drag ended');
+        isDragging = false;
+      });
+    });
+  </script>
   
 </body>
 </html>
