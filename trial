@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AR.js with Transform Controls</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@latest/aframe/build/aframe-ar.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/TransformControls.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    a-scene { height: 100vh; }
+  </style>
+</head>
+<body>
+  <a-scene embedded arjs>
+    <a-box id="box" position="0 0 -3" rotation="0 45 0" scale="1 1 1" color="#4CC3D9"></a-box>
+    
+    <a-nft type="nft" url="https://jsaad-syncoms.github.io/ar3/nft/" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
+      <a-entity position="0 0 0" scale="0.05 0.05 0.05">
+        <a-box position="0 0.25 0" depth="1" height="0.5" width="2" material="color: brown;"></a-box>
+        <a-box position="0 0.75 0" depth="1" height="0.5" width="2" material="color: lightgrey;"></a-box>
+        <a-box position="0 1.0 0.45" depth="0.1" height="0.5" width="2" material="color: lightgrey;"></a-box>
+      </a-entity>
+    </a-nft>
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const sceneEl = document.querySelector('a-scene');
+      const boxEl = document.querySelector('#box');
+
+      // Ensure A-Frame is fully loaded
+      sceneEl.addEventListener('loaded', function () {
+        // Convert A-Frame entity to Three.js object
+        const box = boxEl.object3D;
+        const scene = sceneEl.object3D;
+        
+        // Create TransformControls
+        const controls = new THREE.TransformControls(sceneEl.camera, sceneEl.renderer.domElement);
+        controls.attach(box);
+        controls.setMode('translate'); // Can be 'translate', 'rotate', or 'scale'
+        scene.add(controls);
+
+        // Handle touch events
+        sceneEl.addEventListener('touchstart', function (event) {
+          controls.enabled = true;
+        });
+        
+        sceneEl.addEventListener('touchend', function (event) {
+          controls.enabled = false;
+        });
+        
+        // Handle mouse events
+        sceneEl.addEventListener('mousedown', function (event) {
+          controls.enabled = true;
+        });
+        
+        sceneEl.addEventListener('mouseup', function (event) {
+          controls.enabled = false;
+        });
+
+        // Optionally, you can handle control changes if needed
+        controls.addEventListener('change', function () {
+          boxEl.setAttribute('position', box.position);
+          boxEl.setAttribute('rotation', box.rotation);
+          boxEl.setAttribute('scale', box.scale);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
