@@ -94,7 +94,7 @@
                   // Force re-render by setting material to a blank value then back to the texture
                   mattress.setAttribute('material', 'src: ');
                   setTimeout(() => {
-                    mattress.setAttribute('material', 'src: #bedTexture; color: white;');
+                    mattress.setAttribute('material', 'src: #bedTexture; color: white; repeat: 1 1; offset: 0 0;');
                     console.log('Mattress material updated:', mattress.getAttribute('material'));
                   }, 0);
                 };
