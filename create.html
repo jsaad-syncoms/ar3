@@ -251,20 +251,25 @@
 
             fileInput.addEventListener('change', function (event) {
                 const file = event.target.files[0];
+                console.log('File selected:', file);
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function (e) {
+                        console.log('FileReader loaded:', e.target.result);
+                        // Set the texture src attribute
                         texture.setAttribute('src', e.target.result);
 
-                        // Wait for the texture to load before updating the box material
-                        texture.addEventListener('load', function () {
+                        // Update the box material after the texture is loaded
+                        texture.onload = function () {
+                            console.log('Texture loaded:', texture.getAttribute('src'));
                             box.setAttribute('material', 'src: #boxTexture');
-                        });
+                            console.log('Box material updated:', box.getAttribute('material'));
+                        };
                     };
                     reader.readAsDataURL(file);
+                    console.log('FileReader reading as DataURL');
                 }
             });
-        });
     </script>
 
 </body>
