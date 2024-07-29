@@ -38,20 +38,20 @@
 <body>
     <input type="file" id="file-input" accept="image/*">
 
-    <a-scene embedded arjs>
+    <a-scene embedded arjs id="scene">
         <a-assets>
-            <img id="boxTexture" src="https://jsaad-syncoms.github.io/ar3/pexels-anniroenkae-2860804.jpg"
+            <img id="bedTexture" src="https://jsaad-syncoms.github.io/ar3/pexels-anniroenkae-2860804.jpg"
                 crossorigin="anonymous" />
         </a-assets>
 
         <a-entity id="bed" position="0 0 -10" rotation="15 0 0" scale="0.5 0.5 0.5">
             <!-- Bed Frame -->
-            <a-box position="0 0.25 0" depth="8" height="0.5" width="5" material="color: brown;"></a-box>
+            <a-box position="0 0.25 0" depth="8" height="0.5" width="5" material="color: #5a3a3a;"></a-box>
             <!-- Mattress -->
             <a-box position="0 0.75 0" depth="7.8" height="0.5" width="4.8"
                 material="src: #bedTexture; color: white;"></a-box>
             <!-- Headboard -->
-            <a-box position="0 1.5 -1.4" depth="0.2" height="1" width="4.8" material="color: brown;"></a-box>
+            <a-box position="0 1.5 -1.4" depth="0.2" height="1" width="4.8" material="color: #5a3a3a;"></a-box>
         </a-entity>
 
         <a-nft type="nft" url="https://jsaad-syncoms.github.io/ar3/nft/" smooth="true" smoothCount="10"
