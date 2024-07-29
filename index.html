@@ -224,74 +224,62 @@
       let previousPosition = { x: 0, y: 0 };
       let initialScale = { x: 1, y: 1, z: 1 };
       let initialDistance = 0;
-      let initialRotation = { x: 0, y: 0 };
+      let startClickTime = 0;
 
       // Helper function to calculate distance between two touch points
       function getDistance(touches) {
         const dx = touches[0].clientX - touches[1].clientX;
-        const dy = touches[0].clientY - touches[0].clientY;
+        const dy = touches[0].clientY - touches[1].clientY;
         return Math.sqrt(dx * dx + dy * dy);
       }
 
-      // Mouse events for rotation
+      // Mouse events
       scene.addEventListener('mousedown', function (event) {
-        if (event.detail === 2) {  // Double click for repositioning
+        if (event.detail === 2) {  // Double click
           isDragging = true;
           const rect = scene.renderer.domElement.getBoundingClientRect();
           previousPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
           event.preventDefault();
-        } else if (event.button === 0) {  // Left button for rotation
-          isRotating = true;
-          const rect = scene.renderer.domElement.getBoundingClientRect();
-          previousPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-          event.preventDefault();
+        } else if (event.button === 0) {  // Left button
+          startClickTime = Date.now();
         }
       });
 
       scene.addEventListener('mousemove', function (event) {
-        if (isDragging) {
-          const rect = scene.renderer.domElement.getBoundingClientRect();
-          const clientX = event.clientX;
-          const clientY = event.clientY;
-          const currentPosition = { x: clientX - rect.left, y: clientY - rect.top };
+        if (Date.now() - startClickTime < 500 && event.button === 0) {
+          // If the mouse was clicked within the last 500ms, rotate
+          if (isRotating) {
+            const rect = scene.renderer.domElement.getBoundingClientRect();
+            const currentPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+            const deltaX = currentPosition.x - previousPosition.x;
+            const deltaY = currentPosition.y - previousPosition.y;
 
-          const deltaX = currentPosition.x - previousPosition.x;
-          const deltaY = currentPosition.y - previousPosition.y;
+            const rotation = box.getAttribute('rotation');
+            box.setAttribute('rotation', {
+              x: rotation.x + deltaY * 0.1,
+              y: rotation.y + deltaX * 0.1,
+              z: rotation.z
+            });
 
-          const position = box.getAttribute('position');
-          box.setAttribute('position', {
-            x: position.x + deltaX * 0.01,
-            y: position.y - deltaY * 0.01,
-            z: position.z
-          });
-
-          previousPosition = currentPosition;
-          event.preventDefault();
-        } else if (isRotating) {
-          const rect = scene.renderer.domElement.getBoundingClientRect();
-          const currentPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-
-          const deltaX = currentPosition.x - previousPosition.x;
-          const deltaY = currentPosition.y - previousPosition.y;
-
-          const rotation = box.getAttribute('rotation');
-          box.setAttribute('rotation', {
-            x: rotation.x + deltaY * 0.1,
-            y: rotation.y + deltaX * 0.1,
-            z: rotation.z
-          });
-
-          previousPosition = currentPosition;
-          event.preventDefault();
+            previousPosition = currentPosition;
+            event.preventDefault();
+          }
         }
       });
 
-      scene.addEventListener('mouseup', function () {
+      scene.addEventListener('mouseup', function (event) {
+        if (event.button === 0) {  // Left button
+          if (Date.now() - startClickTime < 500) {
+            isRotating = true;
+          } else {
+            isRotating = false;
+          }
+          startClickTime = 0;
+        }
         isDragging = false;
-        isRotating = false;
       });
 
-      // Touch events for resizing and repositioning
+      // Touch events
       scene.addEventListener('touchstart', function (event) {
         if (event.touches.length === 1) { // Single touch for repositioning
           isDragging = true;
