@@ -220,25 +220,30 @@
       const box = document.querySelector('#box');
       let isDragging = false;
       let isResizing = false;
+      let isRotating = false;
       let previousPosition = { x: 0, y: 0 };
       let initialScale = { x: 1, y: 1, z: 1 };
       let initialDistance = 0;
+      let initialRotation = { x: 0, y: 0 };
 
       // Helper function to calculate distance between two touch points
       function getDistance(touches) {
         const dx = touches[0].clientX - touches[1].clientX;
-        const dy = touches[0].clientY - touches[0].clientY;
+        const dy = touches[0].clientY - touches[1].clientY;
         return Math.sqrt(dx * dx + dy * dy);
       }
 
-      // Mouse events for rotation and repositioning
+      // Mouse events for rotation
       scene.addEventListener('mousedown', function (event) {
-        if (event.detail === 2) {  // Double click
+        if (event.button === 0) {  // Left button
+          isRotating = true;
+          const rect = scene.renderer.domElement.getBoundingClientRect();
+          previousPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+          event.preventDefault();
+        } else if (event.detail === 2) {  // Double click for repositioning
           isDragging = true;
           const rect = scene.renderer.domElement.getBoundingClientRect();
-          const clientX = event.clientX;
-          const clientY = event.clientY;
-          previousPosition = { x: clientX - rect.left, y: clientY - rect.top };
+          previousPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
           event.preventDefault();
         }
       });
@@ -262,11 +267,28 @@
 
           previousPosition = currentPosition;
           event.preventDefault();
+        } else if (isRotating) {
+          const rect = scene.renderer.domElement.getBoundingClientRect();
+          const currentPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+
+          const deltaX = currentPosition.x - previousPosition.x;
+          const deltaY = currentPosition.y - previousPosition.y;
+
+          const rotation = box.getAttribute('rotation');
+          box.setAttribute('rotation', {
+            x: rotation.x + deltaY * 0.1,
+            y: rotation.y + deltaX * 0.1,
+            z: rotation.z
+          });
+
+          previousPosition = currentPosition;
+          event.preventDefault();
         }
       });
 
       scene.addEventListener('mouseup', function () {
         isDragging = false;
+        isRotating = false;
       });
 
       // Touch events for resizing and repositioning
