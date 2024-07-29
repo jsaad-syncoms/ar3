@@ -1,154 +1,182 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>AR.js Interactive Bed with User Uploaded Image Texture</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@latest/aframe/build/aframe-ar.js"></script>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    a-scene { height: 100vh; }
-    #file-input {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 10;
-    }
-  </style>
+    <title>AR.js Interactive Bed with User Uploaded Image Texture</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@latest/aframe/build/aframe-ar.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        a-scene {
+            height: 100vh;
+        }
+
+        #arjsDebugUIContainer {
+            display: none !important;
+        }
+
+        .a-enter-vr-button,
+        .a-modal {
+            display: none !important;
+        }
+
+        #file-input {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+    </style>
 </head>
+
 <body>
-  <input type="file" id="file-input" accept="image/*">
-  
-  <a-scene embedded arjs>
-    <a-assets>
-      <img id="bedTexture" crossorigin="anonymous"/>
-    </a-assets>
+    <input type="file" id="file-input" accept="image/*">
 
-    <a-entity id="bed" position="0 0 -3" rotation="0 0 0" scale="0.5 0.5 0.5">
-      <!-- Bed Frame -->
-      <a-box position="0 0.25 0" depth="3" height="0.5" width="5" material="color: brown;"></a-box>
-      <!-- Mattress -->
-      <a-box position="0 0.75 0" depth="2.8" height="0.5" width="4.8" material="src: #bedTexture; color: white;"></a-box>
-      <!-- Headboard -->
-      <a-box position="0 1.5 -1.4" depth="0.2" height="1" width="4.8" material="color: brown;"></a-box>
-    </a-entity>
+    <a-scene embedded arjs>
+        <a-assets>
+            <img id="boxTexture" src="https://jsaad-syncoms.github.io/ar3/pexels-anniroenkae-2860804.jpg"
+                crossorigin="anonymous" />
+        </a-assets>
+
+        <a-entity id="bed" position="0 0 -10" rotation="15 0 0" scale="0.5 0.5 0.5">
+            <!-- Bed Frame -->
+            <a-box position="0 0.25 0" depth="8" height="0.5" width="5" material="color: brown;"></a-box>
+            <!-- Mattress -->
+            <a-box position="0 0.75 0" depth="7.8" height="0.5" width="4.8"
+                material="src: #bedTexture; color: white;"></a-box>
+            <!-- Headboard -->
+            <a-box position="0 1.5 -1.4" depth="0.2" height="1" width="4.8" material="color: brown;"></a-box>
+        </a-entity>
+
+        <a-nft type="nft" url="https://jsaad-syncoms.github.io/ar3/nft/" smooth="true" smoothCount="10"
+            smoothTolerance="0.01" smoothThreshold="5">
+            <a-entity position="0 0 0" scale="0.05 0.05 0.05">
+                <a-box position="0 0.25 0" depth="1" height="0.5" width="2" material="color: brown;"></a-box>
+                <a-box position="0 0.75 0" depth="1" height="0.5" width="2" material="color: lightgrey;"></a-box>
+                <a-box position="0 1.0 0.45" depth="0.1" height="0.5" width="2" material="color: lightgrey;"></a-box>
+            </a-entity>
+        </a-nft>
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const fileInput = document.getElementById('file-input');
+          const bedTexture = document.getElementById('bedTexture');
+          const bed = document.getElementById('bed');
+          const mattress = document.querySelector('#bed a-box:nth-child(2)'); // Select the mattress part
+          let isDragging = false;
+          let isResizing = false;
+          let startPosition = { x: 0, y: 0 };
+          let startScale = 0.5;
+          let initialDistance = 0;
+          let initialScale = 0.5;
     
-    <a-nft type="nft" url="https://jsaad-syncoms.github.io/ar3/nft/" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
-      <a-entity position="0 0 0" scale="0.05 0.05 0.05">
-        <a-box position="0 0.25 0" depth="1" height="0.5" width="2" material="color: brown;"></a-box>
-        <a-box position="0 0.75 0" depth="1" height="0.5" width="2" material="color: lightgrey;"></a-box>
-        <a-box position="0 1.0 0.45" depth="0.1" height="0.5" width="2" material="color: lightgrey;"></a-box>
-      </a-entity>
-    </a-nft>
-    <a-entity camera></a-entity>
-  </a-scene>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const fileInput = document.getElementById('file-input');
-      const bedTexture = document.getElementById('bedTexture');
-      const mattress = document.querySelector('#bed a-box:nth-child(2)'); // Select the mattress part
-      const bed = document.getElementById('bed');
-      let isDragging = false;
-      let startPosition = { x: 0, y: 0 };
-      let startScale = 0.5;
-
-      fileInput.addEventListener('change', function (event) {
-        const file = event.target.files[0];
-        console.log('File selected:', file);
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            console.log('FileReader loaded:', e.target.result);
-            // Set the texture src attribute
-            bedTexture.setAttribute('src', e.target.result);
-
-            // Update the mattress material after the texture is loaded
-            bedTexture.onload = function () {
-              console.log('Texture loaded:', bedTexture.getAttribute('src'));
-              // Force re-render by setting material to a blank value then back to the texture
-              mattress.setAttribute('material', 'src: ');
-              setTimeout(() => {
-                mattress.setAttribute('material', 'src: #bedTexture; color: white;');
-                console.log('Mattress material updated:', mattress.getAttribute('material'));
-              }, 0);
-            };
-          };
-          reader.readAsDataURL(file);
-          console.log('FileReader reading as DataURL');
-        }
-      });
-
-      // Handle mouse and touch events for repositioning and resizing
-      bed.addEventListener('mousedown', function (event) {
-        isDragging = true;
-        startPosition = { x: event.clientX, y: event.clientY };
-        event.preventDefault();
-      });
-
-      window.addEventListener('mousemove', function (event) {
-        if (isDragging) {
-          const dx = event.clientX - startPosition.x;
-          const dy = event.clientY - startPosition.y;
-          const newPosition = { x: bed.object3D.position.x + dx * 0.01, y: bed.object3D.position.y - dy * 0.01 };
-          bed.object3D.position.set(newPosition.x, newPosition.y, bed.object3D.position.z);
-          startPosition = { x: event.clientX, y: event.clientY };
-        }
-      });
-
-      window.addEventListener('mouseup', function () {
-        isDragging = false;
-      });
-
-      bed.addEventListener('wheel', function (event) {
-        const delta = event.deltaY > 0 ? -0.1 : 0.1;
-        startScale = Math.max(0.1, startScale + delta);
-        bed.setAttribute('scale', `${startScale} ${startScale} ${startScale}`);
-      });
-
-      bed.addEventListener('touchstart', function (event) {
-        if (event.touches.length === 1) {
-          isDragging = true;
-          startPosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
-        }
-        if (event.touches.length === 2) {
-          isResizing = true;
-          initialDistance = Math.sqrt(
-            Math.pow(event.touches[0].clientX - event.touches[1].clientX, 2) +
-            Math.pow(event.touches[0].clientY - event.touches[1].clientY, 2)
-          );
-          initialScale = startScale;
-        }
-        event.preventDefault();
-      });
-
-      window.addEventListener('touchmove', function (event) {
-        if (isDragging && event.touches.length === 1) {
-          const dx = event.touches[0].clientX - startPosition.x;
-          const dy = event.touches[0].clientY - startPosition.y;
-          const newPosition = { x: bed.object3D.position.x + dx * 0.01, y: bed.object3D.position.y - dy * 0.01 };
-          bed.object3D.position.set(newPosition.x, newPosition.y, bed.object3D.position.z);
-          startPosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
-        }
-        if (isResizing && event.touches.length === 2) {
-          const currentDistance = Math.sqrt(
-            Math.pow(event.touches[0].clientX - event.touches[1].clientX, 2) +
-            Math.pow(event.touches[0].clientY - event.touches[1].clientY, 2)
-          );
-          const scaleChange = currentDistance / initialDistance;
-          startScale = Math.max(0.1, initialScale * scaleChange);
-          bed.setAttribute('scale', `${startScale} ${startScale} ${startScale}`);
-        }
-      });
-
-      window.addEventListener('touchend', function (event) {
-        if (event.touches.length === 0) {
-          isDragging = false;
-          isResizing = false;
-        }
-      });
-    });
-  </script>
+          fileInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            console.log('File selected:', file);
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = function (e) {
+                console.log('FileReader loaded:', e.target.result);
+                // Set the texture src attribute
+                bedTexture.setAttribute('src', e.target.result);
+    
+                // Update the mattress material after the texture is loaded
+                bedTexture.onload = function () {
+                  console.log('Texture loaded:', bedTexture.getAttribute('src'));
+                  // Force re-render by setting material to a blank value then back to the texture
+                  mattress.setAttribute('material', 'src: ');
+                  setTimeout(() => {
+                    mattress.setAttribute('material', 'src: #bedTexture; color: white;');
+                    console.log('Mattress material updated:', mattress.getAttribute('material'));
+                  }, 0);
+                };
+              };
+              reader.readAsDataURL(file);
+              console.log('FileReader reading as DataURL');
+            }
+          });
+    
+          const scene = document.getElementById('scene');
+    
+          scene.addEventListener('mousedown', function (event) {
+            if (event.button === 0) { // Left mouse button
+              isDragging = true;
+              startPosition = { x: event.clientX, y: event.clientY };
+              event.preventDefault();
+            }
+          });
+    
+          scene.addEventListener('mousemove', function (event) {
+            if (isDragging) {
+              const dx = event.clientX - startPosition.x;
+              const dy = event.clientY - startPosition.y;
+              const newPosition = { x: bed.object3D.position.x + dx * 0.01, y: bed.object3D.position.y - dy * 0.01 };
+              bed.object3D.position.set(newPosition.x, newPosition.y, bed.object3D.position.z);
+              startPosition = { x: event.clientX, y: event.clientY };
+            }
+          });
+    
+          scene.addEventListener('mouseup', function () {
+            isDragging = false;
+          });
+    
+          scene.addEventListener('wheel', function (event) {
+            const delta = event.deltaY > 0 ? -0.1 : 0.1;
+            startScale = Math.max(0.1, startScale + delta);
+            bed.setAttribute('scale', `${startScale} ${startScale} ${startScale}`);
+          });
+    
+          scene.addEventListener('touchstart', function (event) {
+            if (event.touches.length === 1) {
+              isDragging = true;
+              startPosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+            }
+            if (event.touches.length === 2) {
+              isResizing = true;
+              initialDistance = Math.sqrt(
+                Math.pow(event.touches[0].clientX - event.touches[1].clientX, 2) +
+                Math.pow(event.touches[0].clientY - event.touches[1].clientY, 2)
+              );
+              initialScale = startScale;
+            }
+            event.preventDefault();
+          });
+    
+          scene.addEventListener('touchmove', function (event) {
+            if (isDragging && event.touches.length === 1) {
+              const dx = event.touches[0].clientX - startPosition.x;
+              const dy = event.touches[0].clientY - startPosition.y;
+              const newPosition = { x: bed.object3D.position.x + dx * 0.01, y: bed.object3D.position.y - dy * 0.01 };
+              bed.object3D.position.set(newPosition.x, newPosition.y, bed.object3D.position.z);
+              startPosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+            }
+            if (isResizing && event.touches.length === 2) {
+              const currentDistance = Math.sqrt(
+                Math.pow(event.touches[0].clientX - event.touches[1].clientX, 2) +
+                Math.pow(event.touches[0].clientY - event.touches[1].clientY, 2)
+              );
+              const scaleChange = currentDistance / initialDistance;
+              startScale = Math.max(0.1, initialScale * scaleChange);
+              bed.setAttribute('scale', `${startScale} ${startScale} ${startScale}`);
+            }
+          });
+    
+          scene.addEventListener('touchend', function (event) {
+            if (event.touches.length === 0) {
+              isDragging = false;
+              isResizing = false;
+            }
+          });
+        });
+      </script>
 </body>
+
 </html>
