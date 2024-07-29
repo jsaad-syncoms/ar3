@@ -13,7 +13,7 @@
 </head>
 <body style="margin: 0; overflow: hidden;">
   <a-scene embedded arjs>
-    <a-box position="0 0 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
+    <a-box id="box" position="0 0 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
     
     <a-nft type="nft" url="https://jsaad-syncoms.github.io/ar3/nft/" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <a-entity position="0 0 0" scale="0.05 0.05 0.05">
@@ -24,5 +24,41 @@
     </a-nft>
     <a-entity camera></a-entity>
   </a-scene>
+
+  <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get reference to the box entity
+            const box = document.getElementById('box');
+
+            // Function to handle resize
+            function resizeBox(event) {
+                const scale = parseFloat(event.target.value);
+                box.setAttribute('scale', `${scale} ${scale} ${scale}`);
+            }
+
+            // Function to handle reposition
+            function repositionBox(event) {
+                const [x, y, z] = event.target.value.split(',').map(Number);
+                box.setAttribute('position', `${x} ${y} ${z}`);
+            }
+
+            // Create UI controls for resizing
+            const resizeInput = document.createElement('input');
+            resizeInput.type = 'range';
+            resizeInput.min = 0.1;
+            resizeInput.max = 3;
+            resizeInput.step = 0.1;
+            resizeInput.value = 1;
+            resizeInput.addEventListener('input', resizeBox);
+            document.body.appendChild(resizeInput);
+
+            // Create UI controls for repositioning
+            const repositionInput = document.createElement('input');
+            repositionInput.type = 'text';
+            repositionInput.placeholder = 'Enter position (x,y,z)';
+            repositionInput.addEventListener('change', repositionBox);
+            document.body.appendChild(repositionInput);
+        });
+    </script>
 </body>
 </html>
