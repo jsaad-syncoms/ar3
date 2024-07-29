@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AR.js with Image Tracking - Bed Model</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.7.2/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/128/three.min.js"></script>
+
+    <style>
+        #arjsDebugUIContainer {
+            display: none !important;
+        }
+
+        .a-enter-vr-button,
+        .a-modal {
+            display: none !important;
+        }
+    </style>
+
+    <!--<script>
+     AFRAME.registerComponent('drag-rotate', {
+      schema: { default: false },
+      init: function () {
+        this.isDragging = false;
+        this.targetEl = this.el.querySelector('#box');
+        this.previousPosition = { x: 0, y: 0 };
+
+        // Bind event listeners to the scene
+        const scene = this.el;
+        scene.addEventListener('mousedown', this.onStart.bind(this));
+        scene.addEventListener('touchstart', this.onStart.bind(this));
+        scene.addEventListener('mousemove', this.onMove.bind(this));
+        scene.addEventListener('touchmove', this.onMove.bind(this));
+        scene.addEventListener('mouseup', this.onEnd.bind(this));
+        scene.addEventListener('touchend', this.onEnd.bind(this));
+      },
+      onStart: function (event) {
+        console.log('Drag started');
+        this.isDragging = true;
+        const rect = this.el.renderer.domElement.getBoundingClientRect();
+        const clientX = event.clientX || event.touches[0].clientX;
+        const clientY = event.clientY || event.touches[0].clientY;
+        this.previousPosition = { x: clientX - rect.left, y: clientY - rect.top };
+        event.preventDefault();
+      },
+      onMove: function (event) {
+        if (this.isDragging && this.targetEl) {
+          console.log('Dragging');
+          const rect = this.el.renderer.domElement.getBoundingClientRect();
+          const clientX = event.clientX || event.touches[0].clientX;
+          const clientY = event.clientY || event.touches[0].clientY;
+          const currentPosition = { x: clientX - rect.left, y: clientY - rect.top };
+
+          const deltaX = currentPosition.x - this.previousPosition.x;
+          const deltaY = currentPosition.y - this.previousPosition.y;
+
+          const rotation = this.targetEl.getAttribute('rotation');
+          this.targetEl.setAttribute('rotation', {
+            x: rotation.x + deltaY * 0.1,
+            y: rotation.y + deltaX * 0.1,
+            z: rotation.z
+          });
+
+          this.previousPosition = currentPosition;
+          event.preventDefault();
+        }
+      },
+      onEnd: function () {
+        console.log('Drag ended');
+        this.isDragging = false;
+      }
+    });
+  </script>-->
+</head>
+
+<body style="margin: 0; overflow: hidden;">
+    <a-scene embedded arjs>
+        <a-assets>
+            <!-- Add your image here -->
+            <img id="boxTexture" src="https://jsaad-syncoms.github.io/ar3/pexels-anniroenkae-2860804.jpg" />
+        </a-assets>
+
+        <a-box id="box" position="0 0 -10" rotation="0 90 12" color="#4CC3D9" depth="2" width="5" height="1"></a-box>
+
+        <a-nft type="nft" url="https://jsaad-syncoms.github.io/ar3/nft/" smooth="true" smoothCount="10"
+            smoothTolerance="0.01" smoothThreshold="5">
+            <a-entity position="0 0 0" scale="0.05 0.05 0.05">
+                <a-box position="0 0.25 0" depth="1" height="0.5" width="2" material="color: brown;"></a-box>
+                <a-box position="0 0.75 0" depth="1" height="0.5" width="2" material="color: lightgrey;"></a-box>
+                <a-box position="0 1.0 0.45" depth="0.1" height="0.5" width="2" material="color: lightgrey;"></a-box>
+            </a-entity>
+        </a-nft>
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const scene = document.querySelector('a-scene');
+            const box = document.querySelector('#box');
+            let isDragging = false;
+            let isRotating = false;
+            let isResizing = false;
+            let previousPosition = { x: 0, y: 0 };
+            let initialScale = { x: 1, y: 1, z: 1 };
+            let initialDistance = 0;
+            let startClickTime = 0;
+
+            // Helper function to calculate distance between two touch points
+            function getDistance(touches) {
+                const dx = touches[0].clientX - touches[1].clientX;
+                const dy = touches[0].clientY - touches[1].clientY;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
+            // Mouse events
+            scene.addEventListener('mousedown', function (event) {
+                if (event.detail === 2) {  // Double click
+                    isDragging = true;
+                    const rect = scene.renderer.domElement.getBoundingClientRect();
+                    previousPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+                    event.preventDefault();
+                } else if (event.button === 0) {  // Left button
+                    startClickTime = Date.now();
+                }
+            });
+
+            scene.addEventListener('mousemove', function (event) {
+                if (Date.now() - startClickTime < 500 && event.button === 0) {
+                    // If the mouse was clicked within the last 500ms, rotate
+                    if (isRotating) {
+                        const rect = scene.renderer.domElement.getBoundingClientRect();
+                        const currentPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+                        const deltaX = currentPosition.x - previousPosition.x;
+                        const deltaY = currentPosition.y - previousPosition.y;
+
+                        const rotation = box.getAttribute('rotation');
+                        box.setAttribute('rotation', {
+                            x: rotation.x + deltaY * 0.1,
+                            y: rotation.y + deltaX * 0.1,
+                            z: rotation.z
+                        });
+
+                        previousPosition = currentPosition;
+                        event.preventDefault();
+                    }
+                }
+            });
+
+            scene.addEventListener('mouseup', function (event) {
+                if (event.button === 0) {  // Left button
+                    if (Date.now() - startClickTime < 500) {
+                        isRotating = true;
+                    } else {
+                        isRotating = false;
+                    }
+                    startClickTime = 0;
+                }
+                isDragging = false;
+            });
+
+            // Touch events
+            scene.addEventListener('touchstart', function (event) {
+                if (event.touches.length === 1) { // Single touch for repositioning
+                    isDragging = true;
+                    const rect = scene.renderer.domElement.getBoundingClientRect();
+                    const clientX = event.touches[0].clientX;
+                    const clientY = event.touches[0].clientY;
+                    previousPosition = { x: clientX - rect.left, y: clientY - rect.top };
+                    event.preventDefault();
+                } else if (event.touches.length === 2) { // Two touches for resizing
+                    isResizing = true;
+                    initialDistance = getDistance(event.touches);
+                    const scale = box.getAttribute('scale');
+                    initialScale = { x: scale.x, y: scale.y, z: scale.z };
+                    event.preventDefault();
+                }
+            });
+
+            scene.addEventListener('touchmove', function (event) {
+                if (isDragging && event.touches.length === 1) {
+                    const rect = scene.renderer.domElement.getBoundingClientRect();
+                    const clientX = event.touches[0].clientX;
+                    const clientY = event.touches[0].clientY;
+                    const currentPosition = { x: clientX - rect.left, y: clientY - rect.top };
+
+                    const deltaX = currentPosition.x - previousPosition.x;
+                    const deltaY = currentPosition.y - previousPosition.y;
+
+                    const position = box.getAttribute('position');
+                    box.setAttribute('position', {
+                        x: position.x + deltaX * 0.01,
+                        y: position.y - deltaY * 0.01,
+                        z: position.z
+                    });
+
+                    previousPosition = currentPosition;
+                    event.preventDefault();
+                } else if (isResizing && event.touches.length === 2) {
+                    const currentDistance = getDistance(event.touches);
+                    const scaleFactor = currentDistance / initialDistance;
+
+                    const newScale = {
+                        x: initialScale.x * scaleFactor,
+                        y: initialScale.y * scaleFactor,
+                        z: initialScale.z * scaleFactor
+                    };
+                    box.setAttribute('scale', newScale);
+
+                    event.preventDefault();
+                }
+            });
+
+            scene.addEventListener('touchend', function (event) {
+                if (event.touches.length < 2) {
+                    isResizing = false;
+                }
+                if (event.touches.length === 0) {
+                    isDragging = false;
+                }
+            });
+
+            // Mouse wheel event for resizing
+            scene.addEventListener('wheel', function (event) {
+                if (!isRotating && !isDragging) {
+                    const scale = box.getAttribute('scale');
+                    const scaleFactor = 1 + event.deltaY * -0.001; // Adjust this for sensitivity
+                    const newScale = {
+                        x: Math.max(0.1, scale.x * scaleFactor),
+                        y: Math.max(0.1, scale.y * scaleFactor),
+                        z: Math.max(0.1, scale.z * scaleFactor)
+                    };
+                    box.setAttribute('scale', newScale);
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
