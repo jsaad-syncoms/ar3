@@ -16,6 +16,13 @@
         .a-modal {
             display: none !important;
         }
+
+        #file-input {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
     </style>
 
     <!--<script>
@@ -75,13 +82,17 @@
 </head>
 
 <body style="margin: 0; overflow: hidden;">
+    <input type="file" id="file-input" accept="image/*">
+
     <a-scene embedded arjs>
         <a-assets>
             <!-- Add your image here -->
-            <img id="boxTexture" src="https://jsaad-syncoms.github.io/ar3/pexels-anniroenkae-2860804.jpg" crossorigin="anonymous" />
+            <img id="boxTexture" src="https://jsaad-syncoms.github.io/ar3/pexels-anniroenkae-2860804.jpg"
+                crossorigin="anonymous" />
         </a-assets>
 
-        <a-box id="box" position="0 0 -10" rotation="0 90 12" color="#4CC3D9" depth="2" width="5" height="1" material="src: #boxTexture"></a-box>
+        <a-box id="box" position="0 0 -10" rotation="0 90 12" color="#4CC3D9" depth="2" width="5" height="1"
+            material="src: #boxTexture"></a-box>
 
         <a-nft type="nft" url="https://jsaad-syncoms.github.io/ar3/nft/" smooth="true" smoothCount="10"
             smoothTolerance="0.01" smoothThreshold="5">
@@ -232,6 +243,21 @@
                     };
                     box.setAttribute('scale', newScale);
                     event.preventDefault();
+                }
+            });
+
+            const fileInput = document.getElementById('file-input');
+            const texture = document.getElementById('boxTexture');
+
+            fileInput.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        texture.setAttribute('src', e.target.result);
+                        box.setAttribute('material', 'src: #boxTexture');
+                    };
+                    reader.readAsDataURL(file);
                 }
             });
         });
