@@ -129,7 +129,7 @@
         });
     </script>-->
 
-  <script>
+  <!--<script>
     document.addEventListener('DOMContentLoaded', function () {
       const scene = document.querySelector('a-scene');
       const box = document.querySelector('#box');
@@ -210,6 +210,137 @@
       scene.addEventListener('touchend', function () {
         console.log('Drag ended');
         isDragging = false;
+      });
+    });
+  </script>-->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const scene = document.querySelector('a-scene');
+      const box = document.querySelector('#box');
+      let isDragging = false;
+      let isResizing = false;
+      let previousPosition = { x: 0, y: 0 };
+      let initialScale = { x: 1, y: 1, z: 1 };
+      let initialDistance = 0;
+
+      // Helper function to calculate distance between two touch points
+      function getDistance(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[0].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+
+      // Mouse events for rotation and repositioning
+      scene.addEventListener('mousedown', function (event) {
+        if (event.detail === 2) {  // Double click
+          isDragging = true;
+          const rect = scene.renderer.domElement.getBoundingClientRect();
+          const clientX = event.clientX;
+          const clientY = event.clientY;
+          previousPosition = { x: clientX - rect.left, y: clientY - rect.top };
+          event.preventDefault();
+        }
+      });
+
+      scene.addEventListener('mousemove', function (event) {
+        if (isDragging) {
+          const rect = scene.renderer.domElement.getBoundingClientRect();
+          const clientX = event.clientX;
+          const clientY = event.clientY;
+          const currentPosition = { x: clientX - rect.left, y: clientY - rect.top };
+
+          const deltaX = currentPosition.x - previousPosition.x;
+          const deltaY = currentPosition.y - previousPosition.y;
+
+          const position = box.getAttribute('position');
+          box.setAttribute('position', {
+            x: position.x + deltaX * 0.01,
+            y: position.y - deltaY * 0.01,
+            z: position.z
+          });
+
+          previousPosition = currentPosition;
+          event.preventDefault();
+        }
+      });
+
+      scene.addEventListener('mouseup', function () {
+        isDragging = false;
+      });
+
+      // Touch events for resizing and repositioning
+      scene.addEventListener('touchstart', function (event) {
+        if (event.touches.length === 1) { // Single touch for repositioning
+          isDragging = true;
+          const rect = scene.renderer.domElement.getBoundingClientRect();
+          const clientX = event.touches[0].clientX;
+          const clientY = event.touches[0].clientY;
+          previousPosition = { x: clientX - rect.left, y: clientY - rect.top };
+          event.preventDefault();
+        } else if (event.touches.length === 2) { // Two touches for resizing
+          isResizing = true;
+          initialDistance = getDistance(event.touches);
+          const scale = box.getAttribute('scale');
+          initialScale = { x: scale.x, y: scale.y, z: scale.z };
+          event.preventDefault();
+        }
+      });
+
+      scene.addEventListener('touchmove', function (event) {
+        if (isDragging && event.touches.length === 1) {
+          const rect = scene.renderer.domElement.getBoundingClientRect();
+          const clientX = event.touches[0].clientX;
+          const clientY = event.touches[0].clientY;
+          const currentPosition = { x: clientX - rect.left, y: clientY - rect.top };
+
+          const deltaX = currentPosition.x - previousPosition.x;
+          const deltaY = currentPosition.y - previousPosition.y;
+
+          const position = box.getAttribute('position');
+          box.setAttribute('position', {
+            x: position.x + deltaX * 0.01,
+            y: position.y - deltaY * 0.01,
+            z: position.z
+          });
+
+          previousPosition = currentPosition;
+          event.preventDefault();
+        } else if (isResizing && event.touches.length === 2) {
+          const currentDistance = getDistance(event.touches);
+          const scaleFactor = currentDistance / initialDistance;
+
+          const newScale = {
+            x: initialScale.x * scaleFactor,
+            y: initialScale.y * scaleFactor,
+            z: initialScale.z * scaleFactor
+          };
+          box.setAttribute('scale', newScale);
+
+          event.preventDefault();
+        }
+      });
+
+      scene.addEventListener('touchend', function (event) {
+        if (event.touches.length < 2) {
+          isResizing = false;
+        }
+        if (event.touches.length === 0) {
+          isDragging = false;
+        }
+      });
+
+      // Mouse wheel event for resizing
+      scene.addEventListener('wheel', function (event) {
+        const scale = box.getAttribute('scale');
+        const scaleFactor = 1 + event.deltaY * -0.001; // Adjust this for sensitivity
+        const newScale = {
+          x: Math.max(0.1, scale.x * scaleFactor),
+          y: Math.max(0.1, scale.y * scaleFactor),
+          z: Math.max(0.1, scale.z * scaleFactor)
+        };
+        box.setAttribute('scale', newScale);
+        event.preventDefault();
       });
     });
   </script>
