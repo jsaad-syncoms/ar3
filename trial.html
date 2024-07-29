@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AR.js with Transform Controls</title>
+  <title>AR.js Interactive Box with Improved Event Handling</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@latest/aframe/build/aframe-ar.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/TransformControls.js"></script>
   <style>
     body { margin: 0; overflow: hidden; }
     a-scene { height: 100vh; }
@@ -29,45 +27,143 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      const sceneEl = document.querySelector('a-scene');
-      const boxEl = document.querySelector('#box');
+      const scene = document.querySelector('a-scene');
+      const box = document.querySelector('#box');
+      let isDragging = false;
+      let isRotating = false;
+      let isResizing = false;
+      let previousPosition = { x: 0, y: 0 };
+      let initialScale = { x: 1, y: 1, z: 1 };
+      let initialDistance = 0;
+      let startClickTime = 0;
 
-      // Ensure A-Frame is fully loaded
-      sceneEl.addEventListener('loaded', function () {
-        // Convert A-Frame entity to Three.js object
-        const box = boxEl.object3D;
-        const scene = sceneEl.object3D;
-        
-        // Create TransformControls
-        const controls = new THREE.TransformControls(sceneEl.camera, sceneEl.renderer.domElement);
-        controls.attach(box);
-        controls.setMode('translate'); // Can be 'translate', 'rotate', or 'scale'
-        scene.add(controls);
+      // Helper function to calculate distance between two touch points
+      function getDistance(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
 
-        // Handle touch events
-        sceneEl.addEventListener('touchstart', function (event) {
-          controls.enabled = true;
-        });
-        
-        sceneEl.addEventListener('touchend', function (event) {
-          controls.enabled = false;
-        });
-        
-        // Handle mouse events
-        sceneEl.addEventListener('mousedown', function (event) {
-          controls.enabled = true;
-        });
-        
-        sceneEl.addEventListener('mouseup', function (event) {
-          controls.enabled = false;
-        });
+      // Mouse events
+      scene.addEventListener('mousedown', function (event) {
+        if (event.detail === 2) {  // Double click
+          isDragging = true;
+          const rect = scene.renderer.domElement.getBoundingClientRect();
+          previousPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+          event.preventDefault();
+        } else if (event.button === 0) {  // Left button
+          startClickTime = Date.now();
+        }
+      });
 
-        // Optionally, you can handle control changes if needed
-        controls.addEventListener('change', function () {
-          boxEl.setAttribute('position', box.position);
-          boxEl.setAttribute('rotation', box.rotation);
-          boxEl.setAttribute('scale', box.scale);
-        });
+      scene.addEventListener('mousemove', function (event) {
+        if (Date.now() - startClickTime < 500 && event.button === 0) {
+          // If the mouse was clicked within the last 500ms, rotate
+          if (isRotating) {
+            const rect = scene.renderer.domElement.getBoundingClientRect();
+            const currentPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+            const deltaX = currentPosition.x - previousPosition.x;
+            const deltaY = currentPosition.y - previousPosition.y;
+
+            const rotation = box.getAttribute('rotation');
+            box.setAttribute('rotation', {
+              x: rotation.x + deltaY * 0.1,
+              y: rotation.y + deltaX * 0.1,
+              z: rotation.z
+            });
+
+            previousPosition = currentPosition;
+            event.preventDefault();
+          }
+        }
+      });
+
+      scene.addEventListener('mouseup', function (event) {
+        if (event.button === 0) {  // Left button
+          if (Date.now() - startClickTime < 500) {
+            isRotating = true;
+          } else {
+            isRotating = false;
+          }
+          startClickTime = 0;
+        }
+        isDragging = false;
+      });
+
+      // Touch events
+      scene.addEventListener('touchstart', function (event) {
+        if (event.touches.length === 1) { // Single touch for repositioning
+          isDragging = true;
+          const rect = scene.renderer.domElement.getBoundingClientRect();
+          const clientX = event.touches[0].clientX;
+          const clientY = event.touches[0].clientY;
+          previousPosition = { x: clientX - rect.left, y: clientY - rect.top };
+          event.preventDefault();
+        } else if (event.touches.length === 2) { // Two touches for resizing
+          isResizing = true;
+          initialDistance = getDistance(event.touches);
+          const scale = box.getAttribute('scale');
+          initialScale = { x: scale.x, y: scale.y, z: scale.z };
+          event.preventDefault();
+        }
+      });
+
+      scene.addEventListener('touchmove', function (event) {
+        if (isDragging && event.touches.length === 1) {
+          const rect = scene.renderer.domElement.getBoundingClientRect();
+          const clientX = event.touches[0].clientX;
+          const clientY = event.touches[0].clientY;
+          const currentPosition = { x: clientX - rect.left, y: clientY - rect.top };
+
+          const deltaX = currentPosition.x - previousPosition.x;
+          const deltaY = currentPosition.y - previousPosition.y;
+
+          const position = box.getAttribute('position');
+          box.setAttribute('position', {
+            x: position.x + deltaX * 0.01,
+            y: position.y - deltaY * 0.01,
+            z: position.z
+          });
+
+          previousPosition = currentPosition;
+          event.preventDefault();
+        } else if (isResizing && event.touches.length === 2) {
+          const currentDistance = getDistance(event.touches);
+          const scaleFactor = currentDistance / initialDistance;
+
+          const newScale = {
+            x: initialScale.x * scaleFactor,
+            y: initialScale.y * scaleFactor,
+            z: initialScale.z * scaleFactor
+          };
+          box.setAttribute('scale', newScale);
+
+          event.preventDefault();
+        }
+      });
+
+      scene.addEventListener('touchend', function (event) {
+        if (event.touches.length < 2) {
+          isResizing = false;
+        }
+        if (event.touches.length === 0) {
+          isDragging = false;
+        }
+      });
+
+      // Mouse wheel event for resizing
+      scene.addEventListener('wheel', function (event) {
+        if (!isRotating && !isDragging) {
+          const scale = box.getAttribute('scale');
+          const scaleFactor = 1 + event.deltaY * -0.001; // Adjust this for sensitivity
+          const newScale = {
+            x: Math.max(0.1, scale.x * scaleFactor),
+            y: Math.max(0.1, scale.y * scaleFactor),
+            z: Math.max(0.1, scale.z * scaleFactor)
+          };
+          box.setAttribute('scale', newScale);
+          event.preventDefault();
+        }
       });
     });
   </script>
