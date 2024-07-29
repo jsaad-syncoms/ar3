@@ -262,8 +262,12 @@
                         // Update the box material after the texture is loaded
                         texture.onload = function () {
                             console.log('Texture loaded:', texture.getAttribute('src'));
-                            box.setAttribute('material', 'src: #boxTexture');
-                            console.log('Box material updated:', box.getAttribute('material'));
+                            // Force re-render by setting material to a blank value then back to the texture
+                            box.setAttribute('material', 'src: ');
+                            setTimeout(() => {
+                                box.setAttribute('material', 'src: #boxTexture');
+                                console.log('Box material updated:', box.getAttribute('material'));
+                            }, 0);
                         };
                     };
                     reader.readAsDataURL(file);
