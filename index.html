@@ -11,25 +11,24 @@
       .a-enter-vr-button {display: none !important;}
   </style>
 
-    <script>
+     <script>
     AFRAME.registerComponent('drag-rotate', {
       schema: { default: false },
       init: function () {
         this.isDragging = false;
         this.previousPosition = { x: 0, y: 0 };
-
+        
+        // Bind event listeners to the component
         this.onStart = this.onStart.bind(this);
         this.onMove = this.onMove.bind(this);
         this.onEnd = this.onEnd.bind(this);
-
-        // Attach event listeners directly to the scene
-        const scene = this.el.sceneEl;
-        scene.addEventListener('mousedown', this.onStart);
-        scene.addEventListener('touchstart', this.onStart);
-        scene.addEventListener('mousemove', this.onMove);
-        scene.addEventListener('touchmove', this.onMove);
-        scene.addEventListener('mouseup', this.onEnd);
-        scene.addEventListener('touchend', this.onEnd);
+        
+        this.el.addEventListener('mousedown', this.onStart);
+        this.el.addEventListener('touchstart', this.onStart);
+        this.el.sceneEl.addEventListener('mousemove', this.onMove);
+        this.el.sceneEl.addEventListener('touchmove', this.onMove);
+        this.el.sceneEl.addEventListener('mouseup', this.onEnd);
+        this.el.sceneEl.addEventListener('touchend', this.onEnd);
       },
       onStart: function (event) {
         console.log('Drag started');
