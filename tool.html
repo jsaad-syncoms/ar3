@@ -383,8 +383,10 @@
                     console.log('start dragging', 2);
                     isDraggingCropper = true;
                     const touch = e.touches[0];
-                    startX = touch.clientX - canvas.getBoundingClientRect().left;
-                    startY = touch.clientY - canvas.getBoundingClientRect().top;
+                    // startX = touch.clientX - canvas.getBoundingClientRect().left;
+                    // startY = touch.clientY - canvas.getBoundingClientRect().top;
+                    startX = touch.pageX - offsetX;
+                    startY = touch.pageY - offsetY;
                     e.preventDefault();
                 }
             });
@@ -394,12 +396,14 @@
                 if (isDraggingCropper && e.touches.length === 1) {
                     console.log('dragging', 2);
                     const touch = e.touches[0];
-                    const dx = (touch.clientX - canvas.getBoundingClientRect().left) - startX;
-                    const dy = (touch.clientY - canvas.getBoundingClientRect().top) - startY;
-                    startX = touch.clientX - canvas.getBoundingClientRect().left;
-                    startY = touch.clientY - canvas.getBoundingClientRect().top;
-                    offsetX += dx;
-                    offsetY += dy;
+                    // const dx = (touch.clientX - canvas.getBoundingClientRect().left) - startX;
+                    // const dy = (touch.clientY - canvas.getBoundingClientRect().top) - startY;
+                    // startX = touch.clientX - canvas.getBoundingClientRect().left;
+                    // startY = touch.clientY - canvas.getBoundingClientRect().top;
+                    // offsetX += dx;
+                    // offsetY += dy;
+                    offsetX = touch.pageX - startX;
+                    offsetY = touch.pageY - startY;
                     constrainOffsets();
                     drawImage();
                     e.preventDefault();
