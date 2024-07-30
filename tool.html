@@ -382,6 +382,7 @@
                 const touch = e.touches[0];
                 startX = touch.clientX - canvas.getBoundingClientRect().left;
                 startY = touch.clientY - canvas.getBoundingClientRect().top;
+                e.preventDefault();
             });
 
             canvas.addEventListener('touchmove', function (e) {
@@ -397,7 +398,7 @@
                     drawImage();
 
                 }
-                //e.preventDefault();
+                e.preventDefault();
             });
 
             canvas.addEventListener('touchend', function () {
