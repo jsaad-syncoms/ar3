@@ -235,6 +235,10 @@
                 }
             });
 
+            // Offscreen canvas for resizing image
+            const offscreenCanvas = document.createElement('canvas');
+            const offscreenCtx = offscreenCanvas.getContext('2d');
+
             function drawImage() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.save();
@@ -282,6 +286,21 @@
                     reader.onload = function (e) {
                         img.src = e.target.result;
                         img.onload = function () {
+                            // Resize the image if it's too large
+                            const maxDimension = 1024; // Maximum width or height
+                            if (img.width > maxDimension || img.height > maxDimension) {
+                                const aspectRatio = img.width / img.height;
+                                if (img.width > img.height) {
+                                    offscreenCanvas.width = maxDimension;
+                                    offscreenCanvas.height = maxDimension / aspectRatio;
+                                } else {
+                                    offscreenCanvas.height = maxDimension;
+                                    offscreenCanvas.width = maxDimension * aspectRatio;
+                                }
+                                offscreenCtx.drawImage(img, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
+                                img.src = offscreenCanvas.toDataURL();
+                            }
+
                             canvas.width = img.width;
                             canvas.height = img.height;
                             offsetX = (canvas.width - img.width) / 2;
