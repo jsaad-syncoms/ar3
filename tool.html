@@ -379,11 +379,11 @@
             // Touch events for dragging
             canvas.addEventListener('touchstart', function (e) {
                 if (e.touches.length === 1) {
-                isDraggingCropper = true;
-                const touch = e.touches[0];
-                startX = touch.clientX - canvas.getBoundingClientRect().left;
-                startY = touch.clientY - canvas.getBoundingClientRect().top;
-                e.preventDefault();
+                    isDraggingCropper = true;
+                    const touch = e.touches[0];
+                    startX = touch.clientX - canvas.getBoundingClientRect().left;
+                    startY = touch.clientY - canvas.getBoundingClientRect().top;
+                    e.preventDefault();
                 }
             });
 
@@ -392,15 +392,15 @@
                     const touch = e.touches[0];
                     const dx = (touch.clientX - canvas.getBoundingClientRect().left) - startX;
                     const dy = (touch.clientY - canvas.getBoundingClientRect().top) - startY;
-                    startX += dx;
-                    startY += dy;
+                    startX = touch.clientX - canvas.getBoundingClientRect().left;
+                    startY = touch.clientY - canvas.getBoundingClientRect().top;
                     offsetX += dx;
                     offsetY += dy;
                     constrainOffsets();
                     drawImage();
                     e.preventDefault();
                 }
-                
+
             });
 
             canvas.addEventListener('touchend', function () {
