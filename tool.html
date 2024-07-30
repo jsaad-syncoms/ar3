@@ -201,6 +201,7 @@
             let isDraggingCropper = false;
             let startX = 0;
             let startY = 0;
+            let minScale = 1;
 
             let isDragging = false;
             let isResizing = false;
@@ -252,17 +253,26 @@
                 return Math.max(min, Math.min(value, max));
             }
 
+            // function constrainOffsets() {
+            //     const imgWidth = img.width * scale;
+            //     const imgHeight = img.height * scale;
+
+            //     const maxOffsetX = Math.max(0, (canvas.width - imgWidth) / 2);
+            //     const minOffsetX = Math.min(0, (canvas.width - imgWidth) / 2);
+            //     const maxOffsetY = Math.max(0, (canvas.height - imgHeight) / 2);
+            //     const minOffsetY = Math.min(0, (canvas.height - imgHeight) / 2);
+
+            //     offsetX = clamp(offsetX, minOffsetX, maxOffsetX);
+            //     offsetY = clamp(offsetY, minOffsetY, maxOffsetY);
+            // }
+
             function constrainOffsets() {
                 const imgWidth = img.width * scale;
                 const imgHeight = img.height * scale;
 
-                const maxOffsetX = Math.max(0, (canvas.width - imgWidth) / 2);
-                const minOffsetX = Math.min(0, (canvas.width - imgWidth) / 2);
-                const maxOffsetY = Math.max(0, (canvas.height - imgHeight) / 2);
-                const minOffsetY = Math.min(0, (canvas.height - imgHeight) / 2);
-
-                offsetX = clamp(offsetX, minOffsetX, maxOffsetX);
-                offsetY = clamp(offsetY, minOffsetY, maxOffsetY);
+                // Prevent image from moving out of canvas
+                offsetX = clamp(offsetX, canvas.width - imgWidth, 0);
+                offsetY = clamp(offsetY, canvas.height - imgHeight, 0);
             }
 
             function initializeCanvas() {
@@ -303,8 +313,8 @@
 
                             canvas.width = img.width;
                             canvas.height = img.height;
-                            offsetX = (canvas.width - img.width) / 2;
-                            offsetY = (canvas.height - img.height) / 2;
+                            offsetX = (canvas.width - img.width * minScale) / 2;
+                            offsetY = (canvas.height - img.height * minScale) / 2;
 
                             // Set minimum scale so the image is never smaller than the canvas
                             const scaleX = canvas.width / img.width;
@@ -337,19 +347,21 @@
             // Mouse events for dragging
             canvas.addEventListener('mousedown', function (e) {
                 isDraggingCropper = true;
-                startX = e.offsetX - offsetX;
-                startY = e.offsetY - offsetY;
+                startX = e.offsetX;
+                startY = e.offsetY;
             });
 
             canvas.addEventListener('mousemove', function (e) {
                 if (isDraggingCropper) {
-                    offsetX = e.offsetX - startX;
-                    offsetY = e.offsetY - startY;
+                    const dx = e.offsetX - startX;
+                    const dy = e.offsetY - startY;
+                    startX = e.offsetX;
+                    startY = e.offsetY;
+                    offsetX += dx;
+                    offsetY += dy;
                     constrainOffsets();
                     drawImage();
-                    setTimeout(() => {
-                        setTextureButton.click()
-                    }, 500);
+
                 }
             });
 
@@ -359,31 +371,40 @@
 
             canvas.addEventListener('mouseleave', function () {
                 isDraggingCropper = false;
+                setTimeout(() => {
+                    setTextureButton.click()
+                }, 500);
             });
 
             // Touch events for dragging
             canvas.addEventListener('touchstart', function (e) {
                 isDraggingCropper = true;
                 const touch = e.touches[0];
-                startX = touch.pageX - offsetX;
-                startY = touch.pageY - offsetY;
+                startX = touch.clientX - canvas.getBoundingClientRect().left;
+                startY = touch.clientY - canvas.getBoundingClientRect().top;
             });
 
             canvas.addEventListener('touchmove', function (e) {
                 if (isDraggingCropper) {
                     const touch = e.touches[0];
-                    offsetX = touch.pageX - startX;
-                    offsetY = touch.pageY - startY;
+                    const dx = (touch.clientX - canvas.getBoundingClientRect().left) - startX;
+                    const dy = (touch.clientY - canvas.getBoundingClientRect().top) - startY;
+                    startX += dx;
+                    startY += dy;
+                    offsetX += dx;
+                    offsetY += dy;
                     constrainOffsets();
                     drawImage();
-                    setTimeout(() => {
-                        setTextureButton.click()
-                    }, 500);
+
                 }
+                e.preventDefault();
             });
 
             canvas.addEventListener('touchend', function () {
                 isDraggingCropper = false;
+                setTimeout(() => {
+                    setTextureButton.click()
+                }, 500);
             });
 
             // Apply crop
