@@ -212,27 +212,27 @@
 
             fileInput.addEventListener('change', function (event) {
                 const file = event.target.files[0];
-                console.log('File selected:', file);
+                // console.log('File selected:', file);
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function (e) {
-                        console.log('FileReader loaded:', e.target.result);
+                        // console.log('FileReader loaded:', e.target.result);
                         // Set the texture src attribute
                         bedsheetTexture.setAttribute('src', e.target.result);
 
                         // Update the mattress material after the texture is loaded
                         bedsheetTexture.onload = function () {
-                            console.log('Texture loaded:', bedsheetTexture.getAttribute('src'));
+                            // console.log('Texture loaded:', bedsheetTexture.getAttribute('src'));
                             // Force re-render by setting material to a blank value then back to the texture
                             bedsheet.setAttribute('material', 'src: ');
                             setTimeout(() => {
                                 bedsheet.setAttribute('material', 'src: #bedsheetTexture; color: white; repeat: 1 1; offset: 0 0;');
-                                console.log('Mattress material updated:', mattress.getAttribute('material'));
+                                // console.log('Mattress material updated:', mattress.getAttribute('material'));
                             }, 0);
                         };
                     };
                     reader.readAsDataURL(file);
-                    console.log('FileReader reading as DataURL');
+                    // console.log('FileReader reading as DataURL');
                 }
             });
 
@@ -378,7 +378,9 @@
 
             // Touch events for dragging
             canvas.addEventListener('touchstart', function (e) {
+                console.log('start dragging', 1);
                 if (e.touches.length === 1) {
+                    console.log('start dragging', 2);
                     isDraggingCropper = true;
                     const touch = e.touches[0];
                     startX = touch.clientX - canvas.getBoundingClientRect().left;
@@ -388,7 +390,9 @@
             });
 
             canvas.addEventListener('touchmove', function (e) {
+                console.log('dragging', 1);
                 if (isDraggingCropper && e.touches.length === 1) {
+                    console.log('dragging', 2);
                     const touch = e.touches[0];
                     const dx = (touch.clientX - canvas.getBoundingClientRect().left) - startX;
                     const dy = (touch.clientY - canvas.getBoundingClientRect().top) - startY;
@@ -429,12 +433,12 @@
 
                 // Update the mattress material after the texture is loaded
                 bedsheetTexture.onload = function () {
-                    console.log('Texture loaded:', bedsheetTexture.getAttribute('src'));
+                    // console.log('Texture loaded:', bedsheetTexture.getAttribute('src'));
                     // Force re-render by setting material to a blank value then back to the texture
                     bedsheet.setAttribute('material', 'src: ');
                     setTimeout(() => {
                         bedsheet.setAttribute('material', 'src: #bedsheetTexture; color: white; repeat: 1 1; offset: 0 0;');
-                        console.log('Mattress material updated:', mattress.getAttribute('material'));
+                        // console.log('Mattress material updated:', mattress.getAttribute('material'));
                     }, 0);
                 };
             });
