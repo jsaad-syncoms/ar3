@@ -319,7 +319,7 @@
                             // Set minimum scale so the image is never smaller than the canvas
                             const scaleX = canvas.width / img.width;
                             const scaleY = canvas.height / img.height;
-                            minScale = Math.max(scaleX, scaleY);
+                            minScale = Math.max(canvas.width / img.width, canvas.height / img.height);
                             scale = minScale;
                             zoomSlider.min = minScale;
                             zoomSlider.value = minScale;
